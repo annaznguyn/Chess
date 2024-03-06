@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Camel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">main_game</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Camel.java</span></div><h1>Camel.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import java.util.ArrayList;
+
+import processing.core.PImage;
+
+public class Camel extends Piece {
+    
+    public Camel(int x, int y, String player, PImage image) {
+<span class="fc" id="L10">        super(x, y, image, &quot;camel&quot;, 2, player);</span>
+<span class="fc" id="L11">    }</span>
+    
+    /** 
+     * @param ourPieces
+     * An array list storing ally's pieces.
+     * @param opponenPieces
+     * An array list storing opponent's pieces.
+     * @param tiles
+     * An array list storing all the tiles of the board.
+     * @return an array list of possible moves
+     * Return an array list storing the possible and valid moves of the piece.
+     */
+    public ArrayList&lt;Rect&gt; getPossibleMoves(ArrayList&lt;Piece&gt; ourPieces, ArrayList&lt;Piece&gt; opponenPieces, ArrayList&lt;Rect&gt; tiles) {
+<span class="fc" id="L24">        ArrayList&lt;Rect&gt; possibleMoves = new ArrayList&lt;Rect&gt;();</span>
+        // the squares above the piece
+<span class="fc" id="L26">        boolean aboveLeft = true;</span>
+<span class="fc" id="L27">        boolean aboveRight = true;</span>
+
+        // the squares on the left side of the piece
+<span class="fc" id="L30">        boolean leftHigher = true;</span>
+<span class="fc" id="L31">        boolean leftLower = true;</span>
+
+        // the squares on the right side of the piece
+<span class="fc" id="L34">        boolean rightHigher = true;</span>
+<span class="fc" id="L35">        boolean rightLower = true;</span>
+
+        // the squares below the the piece
+<span class="fc" id="L38">        boolean belowLeft = true;</span>
+<span class="fc" id="L39">        boolean belowRight = true;</span>
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (int j = 0; j &lt; ourPieces.size(); j++) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() - CELLSIZE</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() - CELLSIZE*3) {</span>
+<span class="fc" id="L44">                aboveLeft = false;</span>
+            }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() + CELLSIZE</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() - CELLSIZE*3) {</span>
+<span class="nc" id="L48">                aboveRight = false;</span>
+            }
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (ourPieces.get(j).getX() == this.getX() - CELLSIZE*3</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() - CELLSIZE) {</span>
+<span class="nc" id="L52">                leftHigher = false;</span>
+            }
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">            if (ourPieces.get(j).getX() == this.getX() - CELLSIZE*3</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() + CELLSIZE) {</span>
+<span class="nc" id="L56">                leftLower = false;</span>
+            }
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() + CELLSIZE*3</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() - CELLSIZE) {</span>
+<span class="nc" id="L60">                rightHigher = false;</span>
+            }
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() + CELLSIZE*3</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() + CELLSIZE) {</span>
+<span class="fc" id="L64">                rightLower = false;</span>
+            }
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() - CELLSIZE</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() + CELLSIZE*3) {</span>
+<span class="nc" id="L68">                belowLeft = false;</span>
+            }
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (ourPieces.get(j).getX() == this.getX() + CELLSIZE</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            &amp;&amp; ourPieces.get(j).getY() == this.getY() + CELLSIZE*3) {</span>
+<span class="fc" id="L72">                belowRight = false;</span>
+            }
+        }
+        // the squares above the piece
+<span class="fc" id="L76">        boolean aboveLeftCaptured = false;</span>
+<span class="fc" id="L77">        boolean aboveRightCaptured = false;</span>
+
+        // the squares on the left side of the piece
+<span class="fc" id="L80">        boolean leftHigherCaptured = false;</span>
+<span class="fc" id="L81">        boolean leftLowerCaptured = false;</span>
+
+        // the squares on the right side of the piece
+<span class="fc" id="L84">        boolean rightHigherCaptured = false;</span>
+<span class="fc" id="L85">        boolean rightLowerCaptured = false;</span>
+
+        // the squares below the the piece
+<span class="fc" id="L88">        boolean belowLeftCaptured = false;</span>
+<span class="fc" id="L89">        boolean belowRightCaptured = false;</span>
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (int j = 0; j &lt; opponenPieces.size(); j++) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() - CELLSIZE</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() - CELLSIZE*3) {</span>
+<span class="nc" id="L94">                aboveLeftCaptured = true;</span>
+            }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() + CELLSIZE</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() - CELLSIZE*3) {</span>
+<span class="fc" id="L98">                aboveRightCaptured = true;</span>
+            }
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() - CELLSIZE*3</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() - CELLSIZE) {</span>
+<span class="fc" id="L102">                leftHigherCaptured = true;</span>
+            }
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() - CELLSIZE*3</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() + CELLSIZE) {</span>
+<span class="fc" id="L106">                leftLowerCaptured = true;</span>
+            }
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() + CELLSIZE*3</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() - CELLSIZE) {</span>
+<span class="fc" id="L110">                rightHigherCaptured = true;</span>
+            }
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() + CELLSIZE*3</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() + CELLSIZE) {</span>
+<span class="fc" id="L114">                rightLowerCaptured = true;</span>
+            }
+<span class="fc bfc" id="L116" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() - CELLSIZE</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() + CELLSIZE*3) {</span>
+<span class="fc" id="L118">                belowLeftCaptured = true;</span>
+            }
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (opponenPieces.get(j).getX() == this.getX() + CELLSIZE</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            &amp;&amp; opponenPieces.get(j).getY() == this.getY() + CELLSIZE*3) {</span>
+<span class="fc" id="L122">                belowRightCaptured = true;</span>
+            }
+        }
+<span class="pc bpc" id="L125" title="2 of 6 branches missed.">        if (aboveLeft &amp;&amp; this.x - CELLSIZE &gt;= 0 &amp;&amp; this.y - CELLSIZE*3 &gt;= 0) {</span>
+<span class="fc" id="L126">            Rect rect = getTile(tiles, this.x - CELLSIZE, this.y - CELLSIZE*3);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">                if (aboveLeftCaptured)</span>
+<span class="nc" id="L129">                    rect.changeColor(lightRed);</span>
+                else
+<span class="fc" id="L131">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L133">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L135" title="3 of 6 branches missed.">        if (aboveRight &amp;&amp; this.x + CELLSIZE &lt;= CELLSIZE * (BOARD_WIDTH-1)</span>
+        &amp;&amp; this.y - CELLSIZE*3 &gt;= 0) {
+<span class="fc" id="L137">            Rect rect = getTile(tiles, this.x + CELLSIZE, this.y - CELLSIZE*3);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">                if (aboveRightCaptured)</span>
+<span class="nc" id="L140">                    rect.changeColor(lightRed);</span>
+                else
+<span class="fc" id="L142">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L144">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L146" title="3 of 6 branches missed.">        if (leftHigher &amp;&amp; this.x - CELLSIZE*3 &gt;= 0 &amp;&amp; this.y - CELLSIZE &gt;= 0) {</span>
+<span class="fc" id="L147">            Rect rect = getTile(tiles, this.x - CELLSIZE*3, this.y - CELLSIZE);</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">                if (leftHigherCaptured)</span>
+<span class="nc" id="L150">                    rect.changeColor(lightRed);</span>
+                else
+<span class="fc" id="L152">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L154">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L156" title="3 of 6 branches missed.">        if (leftLower &amp;&amp; this.x - CELLSIZE*3 &gt;= 0 &amp;&amp; this.y + CELLSIZE &lt;= CELLSIZE * (BOARD_WIDTH-1)) {</span>
+<span class="fc" id="L157">            Rect rect = getTile(tiles, this.x - CELLSIZE*3, this.y + CELLSIZE);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">                if (leftLowerCaptured)</span>
+<span class="nc" id="L160">                    rect.changeColor(lightRed);</span>
+                else
+<span class="fc" id="L162">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L164">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L166" title="3 of 6 branches missed.">        if (rightHigher &amp;&amp; this.x + CELLSIZE*3 &lt;= CELLSIZE * (BOARD_WIDTH-1)</span>
+        &amp;&amp; this.y - CELLSIZE &gt;= 0) {
+<span class="fc" id="L168">            Rect rect = getTile(tiles, this.x + CELLSIZE*3, this.y - CELLSIZE);</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">                if (rightHigherCaptured)</span>
+<span class="nc" id="L171">                    rect.changeColor(lightRed);</span>
+                else
+<span class="fc" id="L173">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L175">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L177" title="2 of 6 branches missed.">        if (rightLower &amp;&amp; this.x + CELLSIZE*3 &lt;= CELLSIZE * (BOARD_WIDTH-1)</span>
+        &amp;&amp; this.y + CELLSIZE &lt;= CELLSIZE * (BOARD_WIDTH-1)) {
+<span class="fc" id="L179">            Rect rect = getTile(tiles, this.x + CELLSIZE*3, this.y + CELLSIZE);</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">                if (rightLowerCaptured)</span>
+<span class="fc" id="L182">                    rect.changeColor(lightRed);</span>
+                else
+<span class="nc" id="L184">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L186">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L188" title="3 of 6 branches missed.">        if (belowLeft &amp;&amp; this.x - CELLSIZE &gt;= 0 &amp;&amp; this.y + CELLSIZE*3 &lt;= CELLSIZE * (BOARD_WIDTH-1)) {</span>
+<span class="fc" id="L189">            Rect rect = getTile(tiles, this.x - CELLSIZE, this.y + CELLSIZE*3);</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">                if (belowLeftCaptured)</span>
+<span class="fc" id="L192">                    rect.changeColor(lightRed);</span>
+                else
+<span class="nc" id="L194">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L196">            possibleMoves.add(rect);</span>
+        }
+<span class="pc bpc" id="L198" title="2 of 6 branches missed.">        if (belowRight &amp;&amp; this.x + CELLSIZE &lt;= CELLSIZE * (BOARD_WIDTH-1)</span>
+        &amp;&amp; this.y + CELLSIZE*3 &lt;= CELLSIZE * (BOARD_WIDTH-1)) {
+<span class="fc" id="L200">            Rect rect = getTile(tiles, this.x + CELLSIZE, this.y + CELLSIZE*3);</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">            if (isHumanPiece()) {</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">                if (belowRightCaptured)</span>
+<span class="fc" id="L203">                    rect.changeColor(lightRed);</span>
+                else
+<span class="nc" id="L205">                    rect.changeColor(darkBlue);</span>
+            }
+<span class="fc" id="L207">            possibleMoves.add(rect);</span>
+        }
+<span class="fc" id="L209">        return possibleMoves;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

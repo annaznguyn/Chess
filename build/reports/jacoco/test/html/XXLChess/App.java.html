@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">main_game</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+
+import processing.core.PApplet;
+import processing.core.PImage;
+import processing.data.JSONObject;
+import processing.event.MouseEvent;
+
+import java.io.*;
+import java.util.*;
+
+public class App extends PApplet {
+
+    public static final int SPRITESIZE = 480;
+    public static final int CELLSIZE = 48;
+    public static final int SIDEBAR = 120;
+    public static final int BOARD_WIDTH = 14;
+
+<span class="fc" id="L19">    public static int WIDTH = CELLSIZE*BOARD_WIDTH+SIDEBAR;</span>
+<span class="fc" id="L20">    public static int HEIGHT = BOARD_WIDTH*CELLSIZE;</span>
+
+    public static final int FPS = 60;
+	
+    public String configPath;
+
+    public static final int BROWN = 0xFFB58863;
+    public static final int YELLOW = 0xFFF0D9B5;
+    public static final int GREY = 178;
+
+    // stores the tiles in the background
+<span class="fc" id="L31">    public ArrayList&lt;Rect&gt; tiles = new ArrayList&lt;Rect&gt;();</span>
+
+    // store black and white pieces
+<span class="fc" id="L34">    public ArrayList&lt;Piece&gt; humanPlayer = new ArrayList&lt;Piece&gt;();</span>
+<span class="fc" id="L35">    public ArrayList&lt;Piece&gt; cpuPlayer = new ArrayList&lt;Piece&gt;();</span>
+
+    // stores the images of the queen to use when we change pawn to queen
+    // black (index 0) and white (index 1) images
+    public ArrayList&lt;PImage&gt; queenImages;
+
+    // information of player and cpu from config.json
+    public int playerTime;
+    public int playerInc;
+
+    public int cpuTime;
+    public int cpuInc;
+
+    public String playerColour;
+    public double pieceMovementSpeed;
+    public int maxMovementTime;
+
+    // mouse event part
+    public boolean mouseClicked;
+    public boolean whitePieceClicked;
+
+    public Game game;
+
+    public boolean resign;
+    public boolean restart;
+
+<span class="fc" id="L61">    public App() {</span>
+<span class="fc" id="L62">        this.configPath = &quot;config.json&quot;;</span>
+<span class="fc" id="L63">        this.queenImages = new ArrayList&lt;PImage&gt;();</span>
+        
+<span class="fc" id="L65">        this.game = new Game(SIDEBAR, WIDTH, HEIGHT, CELLSIZE, BOARD_WIDTH, FPS, tiles, humanPlayer, cpuPlayer, queenImages);</span>
+
+<span class="fc" id="L67">        this.mouseClicked = true;</span>
+<span class="fc" id="L68">        this.whitePieceClicked = true;</span>
+
+<span class="fc" id="L70">        this.resign = false;</span>
+<span class="fc" id="L71">        this.restart = false;</span>
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Initialise the setting of the window size.
+    */
+    public void settings() {
+<span class="fc" id="L78">        size(WIDTH, HEIGHT);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
+    */
+    public void setup() {
+<span class="fc" id="L85">        frameRate(FPS);</span>
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (int x = 0; x &lt; BOARD_WIDTH; x++) {</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            for (int y = 0; y &lt; BOARD_WIDTH; y++) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                if (x % 2 == 0) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">                    if (y % 2 == 0)</span>
+<span class="fc" id="L91">                        tiles.add(new Rect(x * CELLSIZE, y * CELLSIZE, YELLOW));</span>
+                    else
+<span class="fc" id="L93">                        tiles.add(new Rect(x * CELLSIZE, y * CELLSIZE, BROWN));</span>
+                }
+                else {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">                    if (y % 2 == 0)</span>
+<span class="fc" id="L97">                        tiles.add(new Rect(x * CELLSIZE, y * CELLSIZE, BROWN));</span>
+                    else 
+<span class="fc" id="L99">                        tiles.add(new Rect(x * CELLSIZE, y * CELLSIZE, YELLOW));</span>
+                }
+            }
+        }
+
+        // Load images during setup
+<span class="fc" id="L105">        PImage bAmaz = loadImage(&quot;src/main/resources/XXLChess/b-amazon.png&quot;);</span>
+<span class="fc" id="L106">        PImage bArch = loadImage(&quot;src/main/resources/XXLChess/b-archbishop.png&quot;);</span>
+<span class="fc" id="L107">        PImage bBish = loadImage(&quot;src/main/resources/XXLChess/b-bishop.png&quot;);</span>
+<span class="fc" id="L108">        PImage bCame = loadImage(&quot;src/main/resources/XXLChess/b-camel.png&quot;);</span>
+<span class="fc" id="L109">        PImage bChan = loadImage(&quot;src/main/resources/XXLChess/b-chancellor.png&quot;);</span>
+<span class="fc" id="L110">        PImage bKing = loadImage(&quot;src/main/resources/XXLChess/b-king.png&quot;);</span>
+<span class="fc" id="L111">        PImage bKnightKing = loadImage(&quot;src/main/resources/XXLChess/b-knight-king.png&quot;);</span>
+<span class="fc" id="L112">        PImage bKnight = loadImage(&quot;src/main/resources/XXLChess/b-knight.png&quot;);</span>
+<span class="fc" id="L113">        PImage bPawn = loadImage(&quot;src/main/resources/XXLChess/b-pawn.png&quot;);</span>
+<span class="fc" id="L114">        PImage bQueen = loadImage(&quot;src/main/resources/XXLChess/b-queen.png&quot;);</span>
+<span class="fc" id="L115">        PImage bRook = loadImage(&quot;src/main/resources/XXLChess/b-rook.png&quot;);</span>
+<span class="fc" id="L116">        PImage bPawpaw = loadImage(&quot;src/main/resources/XXLChess/b-pawpaw.png&quot;);</span>
+<span class="fc" id="L117">        PImage wAmaz = loadImage(&quot;src/main/resources/XXLChess/w-amazon.png&quot;);</span>
+<span class="fc" id="L118">        PImage wArch = loadImage(&quot;src/main/resources/XXLChess/w-archbishop.png&quot;);</span>
+<span class="fc" id="L119">        PImage wBish = loadImage(&quot;src/main/resources/XXLChess/w-bishop.png&quot;);</span>
+<span class="fc" id="L120">        PImage wCame = loadImage(&quot;src/main/resources/XXLChess/w-camel.png&quot;);</span>
+<span class="fc" id="L121">        PImage wChan = loadImage(&quot;src/main/resources/XXLChess/w-chancellor.png&quot;);</span>
+<span class="fc" id="L122">        PImage wKing = loadImage(&quot;src/main/resources/XXLChess/w-king.png&quot;);</span>
+<span class="fc" id="L123">        PImage wKnightKing = loadImage(&quot;src/main/resources/XXLChess/w-knight-king.png&quot;);</span>
+<span class="fc" id="L124">        PImage wKnight = loadImage(&quot;src/main/resources/XXLChess/w-knight.png&quot;);</span>
+<span class="fc" id="L125">        PImage wPawn = loadImage(&quot;src/main/resources/XXLChess/w-pawn.png&quot;);</span>
+<span class="fc" id="L126">        PImage wQueen = loadImage(&quot;src/main/resources/XXLChess/w-queen.png&quot;);</span>
+<span class="fc" id="L127">        PImage wRook = loadImage(&quot;src/main/resources/XXLChess/w-rook.png&quot;);</span>
+<span class="fc" id="L128">        PImage wPawpaw = loadImage(&quot;src/main/resources/XXLChess/w-pawpaw.png&quot;);</span>
+
+        // stores the queen images
+<span class="fc" id="L131">        queenImages.add(bQueen);</span>
+<span class="fc" id="L132">        queenImages.add(wQueen);</span>
+
+        // load config
+<span class="fc" id="L135">        JSONObject conf = loadJSONObject(new File(this.configPath));</span>
+
+        // extract config file
+<span class="fc" id="L138">        String layoutFile = conf.getString(&quot;layout&quot;);</span>
+
+        // extract information of player and cpu
+<span class="fc" id="L141">        JSONObject timeControl = conf.getJSONObject(&quot;time_controls&quot;);</span>
+
+<span class="fc" id="L143">        playerTime = timeControl.getJSONObject(&quot;player&quot;).getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L144">        playerInc = timeControl.getJSONObject(&quot;player&quot;).getInt(&quot;increment&quot;);</span>
+        
+<span class="fc" id="L146">        cpuTime = timeControl.getJSONObject(&quot;cpu&quot;).getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L147">        cpuInc = timeControl.getJSONObject(&quot;cpu&quot;).getInt(&quot;increment&quot;);</span>
+
+<span class="fc" id="L149">        playerColour = conf.getString(&quot;player_colour&quot;);</span>
+<span class="fc" id="L150">        pieceMovementSpeed = conf.getDouble(&quot;piece_movement_speed&quot;);</span>
+<span class="fc" id="L151">        maxMovementTime = conf.getInt(&quot;max_movement_time&quot;);</span>
+
+<span class="fc" id="L153">        game.setFirstPlayer(playerColour);</span>
+<span class="fc" id="L154">        game.setPieceMovementSpeed(pieceMovementSpeed);</span>
+<span class="fc" id="L155">        game.setMaxMovementTime(maxMovementTime);</span>
+
+<span class="fc" id="L157">        game.setPlayerTime(playerTime);</span>
+<span class="fc" id="L158">        game.setPlayerInc(playerInc);</span>
+<span class="fc" id="L159">        game.setCPUTime(cpuTime);</span>
+<span class="fc" id="L160">        game.setCPUInc(cpuInc);</span>
+
+        /* array stores lines in the file with key &quot;layout&quot; in config.json
+         * including empty lines
+        */
+<span class="fc" id="L165">        ArrayList&lt;String&gt; array = new ArrayList&lt;String&gt;();</span>
+
+        try {
+            // IF CANNOT RUN, PLEASE CHANGE THE FILE PATH BEFORE RUN
+<span class="fc" id="L169">            File f = new File(layoutFile);</span>
+<span class="fc" id="L170">            Scanner scan = new Scanner(f);</span>
+
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            while (scan.hasNext())</span>
+<span class="fc" id="L173">                array.add(scan.nextLine());</span>
+
+<span class="fc" id="L175">            scan.close();</span>
+<span class="nc" id="L176">        } catch (Exception e) {</span>
+<span class="nc" id="L177">            e.printStackTrace();</span>
+<span class="fc" id="L178">        }</span>
+
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        for (int y = 0; y &lt; array.size(); y++) {</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">            if (array.get(y).equals(&quot;&quot;))</span>
+<span class="fc" id="L182">                continue;</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">            if (playerColour.equals(&quot;black&quot;)) {</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                for (int x = 0; x &lt; array.get(y).length(); x++) {</span>
+<span class="nc" id="L185">                    char letter = array.get(y).charAt(x);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                    if (letter == 'R')</span>
+<span class="nc" id="L187">                        humanPlayer.add(new Rook(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bRook));</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                    else if (letter == 'N')</span>
+<span class="nc" id="L189">                        humanPlayer.add(new Knight(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bKnight));</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                    else if (letter == 'B')</span>
+<span class="nc" id="L191">                        humanPlayer.add(new Bishop(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bBish));</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                    else if (letter == 'H')</span>
+<span class="nc" id="L193">                        humanPlayer.add(new Archbishop(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bArch));</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                    else if (letter == 'C')</span>
+<span class="nc" id="L195">                        humanPlayer.add(new Camel(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bCame));</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                    else if (letter == 'G')</span>
+<span class="nc" id="L197">                        humanPlayer.add(new Guard(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bKnightKing));</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                    else if (letter == 'A')</span>
+<span class="nc" id="L199">                        humanPlayer.add(new Amazon(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bAmaz));</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                    else if (letter == 'K')</span>
+<span class="nc" id="L201">                        humanPlayer.add(new King(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bKing));</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">                    else if (letter == 'E')</span>
+<span class="nc" id="L203">                        humanPlayer.add(new Chancellor(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bChan));</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                    else if (letter == 'P')</span>
+<span class="nc" id="L205">                        humanPlayer.add(new Pawn(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bPawn));</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                    else if (letter == 'W')</span>
+<span class="nc" id="L207">                        humanPlayer.add(new Pawpaw(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, bPawpaw));</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                    else if (letter == 'p')</span>
+<span class="nc" id="L209">                        cpuPlayer.add(new Pawn(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wPawn));</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                    else if (letter == 'r')</span>
+<span class="nc" id="L211">                        cpuPlayer.add(new Rook(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wRook));</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                    else if (letter == 'n')</span>
+<span class="nc" id="L213">                        cpuPlayer.add(new Knight(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wKnight));</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                    else if (letter == 'b')</span>
+<span class="nc" id="L215">                        cpuPlayer.add(new Bishop(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wBish));</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                    else if (letter == 'h')</span>
+<span class="nc" id="L217">                        cpuPlayer.add(new Archbishop(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wArch));</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">                    else if (letter == 'c')</span>
+<span class="nc" id="L219">                        cpuPlayer.add(new Camel(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wCame));</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                    else if (letter == 'g')</span>
+<span class="nc" id="L221">                        cpuPlayer.add(new Guard(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wKnightKing));</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                    else if (letter == 'a')</span>
+<span class="nc" id="L223">                        cpuPlayer.add(new Amazon(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wAmaz));</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                    else if (letter == 'k')</span>
+<span class="nc" id="L225">                        cpuPlayer.add(new King(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wKing));</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">                    else if (letter == 'e')</span>
+<span class="nc" id="L227">                        cpuPlayer.add(new Chancellor(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wChan));</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                    else if (letter == 'w')</span>
+<span class="nc" id="L229">                        cpuPlayer.add(new Pawpaw(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, wPawpaw));</span>
+                }
+            }
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">            else if (playerColour.equals(&quot;white&quot;)) {</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">                for (int x = 0; x &lt; array.get(y).length(); x++) {</span>
+<span class="fc" id="L234">                    char letter = array.get(y).charAt(x);</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">                    if (letter == 'R')</span>
+<span class="fc" id="L236">                        cpuPlayer.add(new Rook(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bRook));</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">                    else if (letter == 'N')</span>
+<span class="fc" id="L238">                        cpuPlayer.add(new Knight(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bKnight));</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">                    else if (letter == 'B')</span>
+<span class="fc" id="L240">                        cpuPlayer.add(new Bishop(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bBish));</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">                    else if (letter == 'H')</span>
+<span class="fc" id="L242">                        cpuPlayer.add(new Archbishop(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bArch));</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">                    else if (letter == 'C')</span>
+<span class="fc" id="L244">                        cpuPlayer.add(new Camel(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bCame));</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">                    else if (letter == 'G')</span>
+<span class="fc" id="L246">                        cpuPlayer.add(new Guard(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bKnightKing));</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">                    else if (letter == 'A')</span>
+<span class="fc" id="L248">                        cpuPlayer.add(new Amazon(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bAmaz));</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">                    else if (letter == 'K')</span>
+<span class="fc" id="L250">                        cpuPlayer.add(new King(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bKing));</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">                    else if (letter == 'E')</span>
+<span class="fc" id="L252">                        cpuPlayer.add(new Chancellor(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bChan));</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">                    else if (letter == 'P')</span>
+<span class="fc" id="L254">                        cpuPlayer.add(new Pawn(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bPawn));</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">                    else if (letter == 'W')</span>
+<span class="nc" id="L256">                        cpuPlayer.add(new Pawpaw(x * CELLSIZE, y * CELLSIZE, &quot;cpu&quot;, bPawpaw));</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">                    else if (letter == 'p')</span>
+<span class="fc" id="L258">                        humanPlayer.add(new Pawn(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wPawn));</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">                    else if (letter == 'r')</span>
+<span class="fc" id="L260">                        humanPlayer.add(new Rook(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wRook));</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">                    else if (letter == 'n')</span>
+<span class="fc" id="L262">                        humanPlayer.add(new Knight(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wKnight));</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">                    else if (letter == 'b')</span>
+<span class="fc" id="L264">                        humanPlayer.add(new Bishop(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wBish));</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">                    else if (letter == 'h')</span>
+<span class="fc" id="L266">                        humanPlayer.add(new Archbishop(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wArch));</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">                    else if (letter == 'c')</span>
+<span class="fc" id="L268">                        humanPlayer.add(new Camel(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wCame));</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">                    else if (letter == 'g')</span>
+<span class="fc" id="L270">                        humanPlayer.add(new Guard(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wKnightKing));</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">                    else if (letter == 'a')</span>
+<span class="fc" id="L272">                        humanPlayer.add(new Amazon(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wAmaz));</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">                    else if (letter == 'k')</span>
+<span class="fc" id="L274">                        humanPlayer.add(new King(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wKing));</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">                    else if (letter == 'e')</span>
+<span class="fc" id="L276">                        humanPlayer.add(new Chancellor(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wChan));</span>
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">                    else if (letter == 'w')</span>
+<span class="nc" id="L278">                        humanPlayer.add(new Pawpaw(x * CELLSIZE, y * CELLSIZE, &quot;human&quot;, wPawpaw));</span>
+                }
+            }
+        }
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Receive key pressed signal from the keyboard.
+    */
+    public void keyPressed(){
+        // resign from game
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (this.keyCode == 69)</span>
+<span class="nc" id="L290">            resign = true;</span>
+        // restart game
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        if (this.keyCode == 82) {</span>
+<span class="nc" id="L293">            resign = false;</span>
+<span class="nc" id="L294">            restart = true;</span>
+        }
+<span class="nc" id="L296">    }</span>
+
+    
+    /** 
+     * @param e
+     * Toggle the boolean to indicate if a tile/piece is being clicked, set the
+     * x, y coordinate of the pixel that is being clicked.
+     */
+    @Override
+    public void mousePressed(MouseEvent e) {
+<span class="nc" id="L306">        game.setXClicked(e.getX());</span>
+<span class="nc" id="L307">        game.setYClicked(e.getY());</span>
+
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        if (this.mouseClicked) {</span>
+            // check if we click on a human player piece
+<span class="nc bnc" id="L311" title="All 2 branches missed.">            for (int i = 0; i &lt; game.getHumanPieces().size(); i++) {</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                if (game.tileIsClicked(game.getHumanPieces().get(i).getX(), game.getHumanPieces().get(i).getY())) {</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">                    if (this.whitePieceClicked) {</span>
+<span class="nc" id="L314">                        game.setIsClicked(true);</span>
+<span class="nc" id="L315">                        this.mouseClicked = false;</span>
+<span class="nc" id="L316">                        this.whitePieceClicked = false;</span>
+<span class="nc" id="L317">                        break;</span>
+                    }
+                    // unselect
+                    else {
+<span class="nc" id="L321">                        game.setIsClicked(false);</span>
+<span class="nc" id="L322">                        this.mouseClicked = true;</span>
+<span class="nc" id="L323">                        this.whitePieceClicked = true;</span>
+<span class="nc" id="L324">                        break;</span>
+                    }
+                }
+                // if we don't click on tile containing a white piece
+<span class="nc bnc" id="L328" title="All 2 branches missed.">                else if (i == game.getHumanPieces().size() - 1) {</span>
+<span class="nc" id="L329">                    game.setIsClicked(true);</span>
+<span class="nc" id="L330">                    this.mouseClicked = false;</span>
+<span class="nc" id="L331">                    this.whitePieceClicked = true;</span>
+                }
+            }
+        }
+        else {
+            // check if we click on a white piece
+<span class="nc bnc" id="L337" title="All 2 branches missed.">            for (int i = 0; i &lt; game.getHumanPieces().size(); i++) {</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                if (game.tileIsClicked(game.getHumanPieces().get(i).getX(), game.getHumanPieces().get(i).getY())) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                    if (this.whitePieceClicked) {</span>
+<span class="nc" id="L340">                        game.setIsClicked(true);</span>
+<span class="nc" id="L341">                        this.mouseClicked = false;</span>
+<span class="nc" id="L342">                        this.whitePieceClicked = false;</span>
+<span class="nc" id="L343">                        break;</span>
+                    }
+                    // unselect
+                    else {
+<span class="nc" id="L347">                        game.setIsClicked(false);</span>
+<span class="nc" id="L348">                        this.mouseClicked = true;</span>
+<span class="nc" id="L349">                        this.whitePieceClicked = true;</span>
+<span class="nc" id="L350">                        break;</span>
+                    }
+                }
+                // if we don't click on tile containing a white piece
+<span class="nc bnc" id="L354" title="All 2 branches missed.">                else if (i == game.getHumanPieces().size() - 1) {</span>
+<span class="nc" id="L355">                    game.setIsClicked(false);</span>
+<span class="nc" id="L356">                    this.mouseClicked = true;</span>
+<span class="nc" id="L357">                    this.whitePieceClicked = true;</span>
+                }
+            }
+        }
+<span class="nc" id="L361">    }</span>
+
+    /**
+     * Draw all elements in the game by current frame. 
+    */
+    public void draw() {
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">        if (resign) {</span>
+<span class="nc" id="L368">            textSize(15);</span>
+<span class="nc" id="L369">            fill(BROWN);</span>
+<span class="nc" id="L370">            text(&quot;You resigned&quot;, WIDTH - 110, HEIGHT/2);</span>
+        }
+        else {
+<span class="fc" id="L373">            fill(GREY);</span>
+<span class="fc" id="L374">            rect(WIDTH - SIDEBAR, 0, SIDEBAR, HEIGHT);</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">            if (restart) {</span>
+<span class="nc" id="L376">                game.setRestart(true);</span>
+<span class="nc" id="L377">                restart = false;</span>
+            }
+<span class="fc" id="L379">            game.draw(this, frameCount);</span>
+        }
+<span class="fc" id="L381">    }</span>
+	
+	// Add any additional methods or attributes you want. Please put classes in different files.
+    
+
+    public static void main(String[] args) {
+<span class="nc" id="L387">        PApplet.main(&quot;XXLChess.App&quot;);</span>
+<span class="nc" id="L388">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

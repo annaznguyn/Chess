@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Piece.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">main_game</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Piece.java</span></div><h1>Piece.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import java.util.ArrayList;
+import processing.core.*;
+
+
+public abstract class Piece extends Sprite {
+
+    protected String name;
+    protected double value;
+    protected String player;
+
+<span class="fc" id="L13">    protected int darkBlue = 0xFFAAD2DD;</span>
+<span class="fc" id="L14">    protected int lightBlue = 0xFFC4E0E8;</span>
+<span class="fc" id="L15">    protected int lightRed = 0xFFFFA466;</span>
+
+    protected boolean isLightBlue;
+
+    protected int startXCoordinate;
+    protected int startYCoordinate;
+
+    private boolean moved;
+
+    protected ArrayList&lt;Rect&gt; oppAllPossibleMoves;
+    
+    public Piece(int x, int y, PImage image, String name, double value, String player) {
+<span class="fc" id="L27">        super(x, y, image);</span>
+<span class="fc" id="L28">        this.name = name;</span>
+<span class="fc" id="L29">        this.value = value;</span>
+<span class="fc" id="L30">        this.player = player;</span>
+
+<span class="fc" id="L32">        this.startXCoordinate = x;</span>
+<span class="fc" id="L33">        this.startYCoordinate = y;</span>
+
+<span class="fc" id="L35">        this.moved = false;</span>
+<span class="fc" id="L36">    }</span>
+
+    /**
+     * @param arrayList
+     * An array list storing all the possible moves of opponent to be set.
+     * Set the arrar list storing all the possible moves of opponent to the given array.
+     */
+    public void setAllPossibleMoves(ArrayList&lt;Rect&gt; arrayList) {
+<span class="nc" id="L44">        this.oppAllPossibleMoves = arrayList;</span>
+<span class="nc" id="L45">    }</span>
+
+    /**
+     * @return boolean
+     * Returns true if the piece has being moved.
+     */
+    public boolean hasBeingMoved() {
+<span class="fc" id="L52">        return this.moved;</span>
+    }
+
+    /**
+     * @param b
+     * The boolean indicating of the piece has being moved before.
+     * Set the boolean value to indicate if the piece has being moved.
+     */
+    public void setMoved(boolean b) {
+<span class="fc" id="L61">        this.moved = b;</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * @return int
+     * Return the original x coordinate.
+     */
+    public int getStartXCoor() {
+<span class="fc" id="L69">        return this.startXCoordinate;</span>
+    }
+
+    /**
+     * @return int
+     * Return the original y coordinate.
+     */
+    public int getStartYCoor() {
+<span class="fc" id="L77">        return this.startYCoordinate;</span>
+    }
+
+    /**
+     * @return name
+     * Return the name of the piece.
+     */
+    public String getName() {
+<span class="fc" id="L85">        return this.name;</span>
+    }
+
+    /**
+     * @return value
+     * Return the value of the piece.
+     */
+    public double getValue() {
+<span class="nc" id="L93">        return this.value;</span>
+    }
+
+    /**
+     * @return player
+     * Return which player the piece belongs to.
+     */
+    public String getPlayer() {
+<span class="nc" id="L101">        return this.player;</span>
+    }
+
+    /** 
+     * @param xToMoveTo
+     * The x coordinate of the tile we want to move to.
+     * @param yToMoveTo
+     * The y coordinate of the tile we want to move to.
+     * @param xSpeed
+     * Speed to move the x coordinate to the destination.
+     * @param ySpeed
+     * Speed to move the y coordinate to the destination.
+     * Move the x, y coordinates by the given speed to the given destination.
+     */
+    public void tick(int xToMoveTo, int yToMoveTo, double xSpeed, double ySpeed) {
+        // going right or left
+<span class="pc bpc" id="L117" title="5 of 8 branches missed.">        if ((xSpeed &lt; 0 &amp;&amp; this.x - xSpeed &gt; xToMoveTo)</span>
+        || (xSpeed &gt; 0 &amp;&amp; this.x - xSpeed &lt; xToMoveTo)) {
+<span class="fc" id="L119">            this.x = xToMoveTo;</span>
+        }
+        // going up or down
+<span class="pc bpc" id="L122" title="6 of 8 branches missed.">        if ((ySpeed &gt; 0 &amp;&amp; this.y - ySpeed &lt; yToMoveTo)</span>
+        || (ySpeed &lt; 0 &amp;&amp; this.y - ySpeed &gt; yToMoveTo)) {
+<span class="fc" id="L124">            this.y = yToMoveTo;</span>
+        }
+    
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        if (this.x != xToMoveTo) {</span>
+<span class="nc" id="L128">            this.x -= xSpeed;</span>
+        }
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        if (this.y != yToMoveTo)</span>
+<span class="nc" id="L131">            this.y -= ySpeed;</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * @return boolean
+     * Returns true if the piece belongs to human player.
+     */
+    public boolean isHumanPiece() {
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (this.player.equals(&quot;human&quot;))</span>
+<span class="fc" id="L140">            return true;</span>
+<span class="fc" id="L141">        return false;</span>
+    }
+
+    /**
+     * @param ourPieces
+     * An array list storing the pieces of allie side.
+     * @param opponentPieces
+     * An array list storing the pieces of opponent side.
+     * @param tiles
+     * An array list storing the tiles of the board.
+     * @return an array list of possible moves
+     * An abtract method to get an array list storing the possible and valid moves of the piece.
+     */
+    public abstract ArrayList&lt;Rect&gt; getPossibleMoves(ArrayList&lt;Piece&gt; ourPieces, ArrayList&lt;Piece&gt; opponentPieces, ArrayList&lt;Rect&gt; tiles);
+
+    /**
+     * @param tiles
+     * An array list storing the tiles of the board.
+     * @param x
+     * The x coordinate of the tile we want to get.
+     * @param y
+     * The y coordinate of the tile we want to get.
+     * @return tile
+     * Return the tile with the given coordinates.
+     */
+    public Rect getTile(ArrayList&lt;Rect&gt; tiles, int x, int y) {
+<span class="fc" id="L167">        Rect rect = tiles.get(0);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        for (Rect r : tiles) {</span>
+<span class="fc bfc" id="L169" title="All 4 branches covered.">            if (r.getX() == x &amp;&amp; r.getY() == y) {</span>
+<span class="fc" id="L170">                rect = r;</span>
+<span class="fc" id="L171">                break;</span>
+            }
+<span class="fc" id="L173">        }</span>
+<span class="fc" id="L174">        return rect;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

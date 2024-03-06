@@ -1,0 +1,1037 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Game.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">main_game</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">Game.java</span></div><h1>Game.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+import processing.core.*;
+import java.util.*;
+
+public class Game {
+
+    private final int CELLSIZE;
+    private final int BOARD_WIDTH;
+    private final int WIDTH;
+    private final int HEIGHT;
+    private final int SIDEBAR;
+    private static final int SECOND = 60;
+
+    private final int FPS;
+    private double pieceMovementSpeed;
+    private int maxMovementTime;
+
+    private static final int DARK_GREEN = 0xFFAAA23A;
+    private static final int LIGHT_GREEN = 0xFFCDD26A;
+    private static final int DARK_RED = 0xFFFF0000;
+    private static final int GREY = 178;
+
+    private ArrayList&lt;Rect&gt; tiles;
+    private ArrayList&lt;Piece&gt; humanPieces;
+    private ArrayList&lt;Piece&gt; cpuPieces;
+
+    // tile selected and piece selected of human player
+    private Rect tileSelected;
+    private Piece pieceSelected;
+
+    // cpu's selected piece
+    private Piece cpuSelectedPiece;
+
+    private boolean isClicked;
+    private int xClicked;
+    private int yClicked;
+
+    private ArrayList&lt;PImage&gt; queenImages;
+
+    private Piece leftRook;
+    private Piece rightRook;
+
+    // support movement
+    private double totalFrame;
+    private double xSpeed;
+    private double ySpeed;
+    private int startFrameCount;
+    // human's player's movement
+    private int moveCounter;
+    // cpu's movement
+    private int cpuMoveCounter;
+    private int randomMove;
+    private Rect cpuSelectedTile;
+
+    // true if is human's turn first
+    private boolean humanTurn;
+
+<span class="fc" id="L59">    private ArrayList&lt;Rect&gt; humanPossibleMoves = new ArrayList&lt;Rect&gt;();</span>
+<span class="fc" id="L60">    private ArrayList&lt;Rect&gt; cpuPossibleMoves = new ArrayList&lt;Rect&gt;();</span>
+
+<span class="fc" id="L62">    private ArrayList&lt;Rect&gt; humanAllPossibleMoves = new ArrayList&lt;Rect&gt;();</span>
+<span class="fc" id="L63">    private ArrayList&lt;Rect&gt; cpuAllPossibleMoves = new ArrayList&lt;Rect&gt;();</span>
+
+    private Piece humanKingPiece;
+    private Piece cpuKingPiece;
+
+    private int playerTime;
+    private int playerInc;
+    private int cpuTime;
+    private int cpuInc;
+
+    // mark the previous move with yellow
+    private boolean changeBackCol;  // for human only
+    private Rect humanPrevTile;
+    private Rect humanTileMoveTo;
+    private Rect cpuPrevTile;
+    private Rect cpuTileMoveTo;
+
+    private boolean restart;
+
+    // timer
+    private int humanTimeCounter;
+    private int cpuTimeCounter;
+    private int humanTimerHeight;
+    private int cpuTimerHeight;
+    
+    public Game(int SIDEBAR, int WIDTH, int HEIGHT, int CELLSIZE, int BOARD_WIDTH, int FPS, ArrayList&lt;Rect&gt; tiles, 
+        ArrayList&lt;Piece&gt; humanPieces, ArrayList&lt;Piece&gt; cpuPieces, 
+<span class="fc" id="L90">        ArrayList&lt;PImage&gt; queenImages) {</span>
+<span class="fc" id="L91">            this.CELLSIZE = CELLSIZE;</span>
+<span class="fc" id="L92">            this.BOARD_WIDTH = BOARD_WIDTH;</span>
+<span class="fc" id="L93">            this.WIDTH = WIDTH;</span>
+<span class="fc" id="L94">            this.HEIGHT = HEIGHT;</span>
+<span class="fc" id="L95">            this.SIDEBAR = SIDEBAR;</span>
+
+<span class="fc" id="L97">            this.FPS = FPS;</span>
+            
+<span class="fc" id="L99">            this.tiles = tiles;</span>
+<span class="fc" id="L100">            this.humanPieces = humanPieces;</span>
+<span class="fc" id="L101">            this.cpuPieces = cpuPieces;</span>
+            
+<span class="fc" id="L103">            this.queenImages = queenImages;</span>
+
+<span class="fc" id="L105">            this.moveCounter = 0;</span>
+<span class="fc" id="L106">            this.cpuMoveCounter = 0;</span>
+
+<span class="fc" id="L108">            this.changeBackCol = false;</span>
+
+<span class="fc" id="L110">            this.restart = false;</span>
+
+<span class="fc" id="L112">            this.humanTimeCounter = 0;</span>
+<span class="fc" id="L113">            this.cpuTimeCounter = 0;</span>
+
+<span class="fc" id="L115">            this.humanTimerHeight = HEIGHT/2 + 270;</span>
+<span class="fc" id="L116">            this.cpuTimerHeight = HEIGHT/2 - 250;</span>
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * @param time
+     * The time to be set.
+     * Set the timer for human player.
+     */
+    public void setPlayerTime(int time) {
+<span class="fc" id="L125">        this.playerTime = time;</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * @param increment
+     * The time increment to be set.
+     * Set the increment time for human player.
+     */
+    public void setPlayerInc(int increment) {
+<span class="fc" id="L134">        this.playerInc = increment;</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * @param time
+     * The time to be set.
+     * Set the timer for cpu player.
+     */
+    public void setCPUTime(int time) {
+<span class="fc" id="L143">        this.cpuTime = time;</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * @param increment
+     * The time increment to be set.
+     * Set the increment time for cpu player.
+     */
+    public void setCPUInc(int increment) {
+<span class="fc" id="L152">        this.cpuInc = increment;</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * @param b
+     * The boolean value to set restart to.
+     * Set the boolean value for restart.
+     */
+    public void setRestart(boolean b) {
+<span class="nc" id="L161">        this.restart = b;</span>
+<span class="nc" id="L162">    }</span>
+
+    /**
+     * @return human pieces
+     * Return a list of human pieces.
+     */
+    public ArrayList&lt;Piece&gt; getHumanPieces() {
+<span class="nc" id="L169">        return this.humanPieces;</span>
+    }
+
+    /**
+     * @param s
+     * The string that indicates the color of the human player's pieces.
+     * If player color is &quot;white&quot;, then it's human's turn first since white pieces can move first.
+     * Else if the player color is &quot;black&quot;, then it's the AI's turn first.
+     */
+    public void setFirstPlayer(String s) {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        if (s.equals(&quot;white&quot;))</span>
+<span class="fc" id="L180">            humanTurn = true;</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        else if (s.equals(&quot;black&quot;))</span>
+<span class="nc" id="L182">            humanTurn = false;</span>
+<span class="fc" id="L183">    }   </span>
+
+    /**
+     * @param speed
+     * The movement speed to be set.
+     * Set the movement speed of the piece.
+     */
+    public void setPieceMovementSpeed(double speed) {
+<span class="fc" id="L191">        this.pieceMovementSpeed = speed;</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * @param maxTime
+     * The maximum time of movement to be set.
+     * Set the maximum movement time of movement for a piece.
+     */
+    public void setMaxMovementTime(int maxTime) {
+<span class="fc" id="L200">        this.maxMovementTime = maxTime;</span>
+<span class="fc" id="L201">    }</span>
+
+    
+    /** 
+     * @param xClick
+     * The x coordinate of the pixel that is being clicked.
+     * Set the x coordinate of the pixel that is being clicked.
+     */
+    public void setXClicked(int xClick) {
+<span class="fc" id="L210">        this.xClicked = xClick;</span>
+<span class="fc" id="L211">    }</span>
+
+    /**
+     * @param yCLick
+     * The y coordinate of the pixel that is being clicked.
+     * Set the y coordinate of the pixel that is being clicked.
+     */
+    public void setYClicked(int yCLick) {
+<span class="fc" id="L219">        this.yClicked = yCLick;</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * @param bool
+     * The boolean indicating whether a mouse click event happens or not.
+     * Set the boolean value to indicate if there is a mouse click event happening.
+     */
+    public void setIsClicked(boolean bool) {
+<span class="nc" id="L228">        this.isClicked = bool;</span>
+<span class="nc" id="L229">    }</span>
+
+    /**
+     * @param x
+     * The x coordinate of the selected tile.
+     * @param y
+     * The y coordinate of the selected tile.
+     * @return boolean
+     * Check if the selected tile contains a human piece and set the current 
+     * selected piece to be the human piece.
+     */
+    public boolean hasHumanPiece(int x, int y) {
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">        for (Piece p : humanPieces) {</span>
+<span class="pc bpc" id="L242" title="2 of 4 branches missed.">            if (p.getX() == x &amp;&amp; p.getY() == y) {</span>
+<span class="fc" id="L243">                return true;</span>
+            }
+<span class="nc" id="L245">        }</span>
+<span class="nc" id="L246">        return false;</span>
+    }
+
+    /**
+     * The y coordinate of the tile that is used to get the piece. Find the piece that 
+     * is being selected by human player using the coordinate of the tile 
+     * that is being clicked.
+     */
+    public void setSelectedHumanPiece() {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        for (Piece p : humanPieces) {</span>
+<span class="nc bnc" id="L256" title="All 4 branches missed.">            if (p.getX() == tileSelected.getX() &amp;&amp; p.getY() == tileSelected.getY()) {</span>
+<span class="nc" id="L257">                this.pieceSelected = p;</span>
+<span class="nc" id="L258">                break;</span>
+            }
+<span class="nc" id="L260">        }</span>
+<span class="nc" id="L261">    }</span>
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * Change the colors of the possible moves of human player's selected piece.
+     */
+    public void changeToBlue(PApplet app) {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        for (Rect tile : tiles) {</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            for (Rect move : humanPossibleMoves) {</span>
+                // if the tile is one of the possible moves of the piece
+<span class="nc bnc" id="L272" title="All 4 branches missed.">                if (tile.getX() == move.getX() &amp;&amp; tile.getY() == move.getY()) {</span>
+                    // change tile's color to move tile's color
+<span class="nc" id="L274">                    tile.changeColor(move.getColor());</span>
+                }
+<span class="nc" id="L276">            }</span>
+<span class="nc" id="L277">        }</span>
+<span class="nc" id="L278">    }</span>
+    
+    /**
+     * @param x
+     * The x coordinate of the tile that is being checked.
+     * @param y
+     * The y coordinate of the tile that is being checked.
+     * @return boolean
+     * Check if the tile with the given coordinate is being clicked. Returns 
+     * true if it is.
+     */
+    public boolean tileIsClicked(int x, int y) {
+        /*
+            * if the x, y coordinates of the place where we click is in one
+            * of our tiles, then the x, y coordinates must be within the two x, y
+            * coordinates of the tiles
+        */
+<span class="fc" id="L295">        int xRange = this.xClicked - x;</span>
+<span class="fc" id="L296">        int yRange = this.yClicked - y;</span>
+<span class="pc bpc" id="L297" title="4 of 8 branches missed.">        if (xRange &lt; this.CELLSIZE &amp;&amp; xRange &gt; 0 </span>
+            &amp;&amp; yRange &lt; this.CELLSIZE &amp;&amp; yRange &gt; 0) {
+<span class="fc" id="L299">                return true;</span>
+        }
+<span class="nc" id="L301">        return false;</span>
+    }
+
+    /**
+     * @return tile
+     * Get the tile that is being clicked on.
+     */
+    public Rect getTileClicked() {
+        int xRange;
+        int yRange;
+<span class="fc" id="L311">        Rect rect = tiles.get(0);</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">        for (Rect r : tiles) {</span>
+<span class="fc" id="L313">            xRange = xClicked - r.getX();</span>
+<span class="fc" id="L314">            yRange = yClicked - r.getY();</span>
+<span class="pc bpc" id="L315" title="3 of 8 branches missed.">            if (xRange &lt; CELLSIZE &amp;&amp; xRange &gt; 0 </span>
+            &amp;&amp; yRange &lt; CELLSIZE &amp;&amp; yRange &gt; 0) {
+<span class="fc" id="L317">                rect = r;</span>
+<span class="fc" id="L318">                break;</span>
+            }
+<span class="fc" id="L320">        }</span>
+<span class="fc" id="L321">        return rect;</span>
+    }
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * @param tile
+     * The tile that we want to change color.
+     * Change the color of the tile that contains the selected piece to dark green.
+     */
+    public void changeTileColourWhenClicked(PApplet app, Rect tile) {
+<span class="nc" id="L332">        tile.changeColor(DARK_GREEN);</span>
+<span class="nc" id="L333">        tile.drawRect(app);</span>
+<span class="nc" id="L334">    }</span>
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * @param tile
+     * The tile that we want to change color.
+     * @param possibleMoves
+     * An array list that stores the possible moves of the tile.
+     * Change the colors of the tiles back to their original colours when the 
+     * piece finishes its move or the player unselects the piece.
+     */
+    public void changeBackColourWhenCLicked(PApplet app, Rect tile, ArrayList&lt;Rect&gt; possibleMoves) {
+<span class="nc" id="L347">        tile.changeColor(tile.getOriginalColor());</span>
+<span class="nc" id="L348">        tile.drawRect(app);</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        for (int i = 0; i &lt; possibleMoves.size(); i++) {</span>
+<span class="nc" id="L350">            possibleMoves.get(i).changeColor(possibleMoves.get(i).getOriginalColor());</span>
+<span class="nc" id="L351">            possibleMoves.get(i).drawRect(app);</span>
+        }
+<span class="nc" id="L353">    }</span>
+
+    /**
+     * @param tile
+     * The tile we want to check if it is a possible move of a piece.
+     * @param possibleMoves
+     * An array list containing the possible moves of a piece.
+     * @return boolean
+     * Check if the tile is one of the possible moves.
+     */
+    public boolean isPossibleMove(Rect tile, ArrayList&lt;Rect&gt; possibleMoves) {
+<span class="fc bfc" id="L364" title="All 2 branches covered.">        for (Rect r : possibleMoves) {</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">            if (tile == r) {</span>
+<span class="fc" id="L366">                return true;</span>
+            }
+<span class="nc" id="L368">        }</span>
+<span class="fc" id="L369">        return false;</span>
+    }
+
+    /**
+     * @param pieces
+     * An array list of pieces.
+     * @param p
+     * The piece we want to remove from the list of pieces.
+     * Remove a piece from a list of pieces.
+     */
+    public void removePiece(ArrayList&lt;Piece&gt; pieces, Piece p) {
+<span class="fc bfc" id="L380" title="All 2 branches covered.">        for (int i = 0; i &lt; pieces.size(); i++) {</span>
+<span class="pc bpc" id="L381" title="1 of 2 branches missed.">            if (pieces.get(i).getX() == p.getX() </span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">                &amp;&amp; pieces.get(i).getY() == p.getY()) {</span>
+<span class="fc" id="L383">                    pieces.remove(i);</span>
+            }
+        }
+<span class="fc" id="L386">    } </span>
+
+    /**
+     * @param isHumanPiece
+     * A boolean indicates whether it is the human or the AI player.
+     * @param x
+     * The x coordinate of the destination tile we want to spawn the queen.
+     * @param y
+     * The y coordinate of the destination tile we want to spawn the queen.
+     * Promote pawn to queen when the pawn reaches 8th rank.
+     */
+    public void changeToQueen(boolean isHumanPiece, int x, int y) {
+        /*
+         * make a queen object with the same coordinates,
+         * add to the whitePiece or blackPiece list,
+         * remove this piece from the whitePiece or blackPiece list
+         */
+        Piece queen;
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (isHumanPiece) {</span>
+<span class="nc" id="L405">            removePiece(humanPieces, pieceSelected);</span>
+<span class="nc" id="L406">            queen = new Queen(x, y, pieceSelected.getPlayer(), queenImages.get(1));</span>
+<span class="nc" id="L407">            humanPieces.add(queen);</span>
+        }
+        else {
+<span class="nc" id="L410">            removePiece(cpuPieces, pieceSelected);</span>
+<span class="nc" id="L411">            queen = new Queen(x, y, pieceSelected.getPlayer(), queenImages.get(0));</span>
+<span class="nc" id="L412">            cpuPieces.add(queen);</span>
+        }
+<span class="nc" id="L414">        pieceSelected = queen;</span>
+<span class="nc" id="L415">    }</span>
+
+    /**
+     * @param x
+     * The x coordinate to check for the AI piece.
+     * @param y
+     * The y coordinate to check for the AI piece.
+     * @return boolean
+     * Check if the tile with the given coordinate has an AI piece on it. Returns
+     * true if it does.
+     */
+    public boolean hasCPUPiece(int x, int y) {
+<span class="pc bpc" id="L427" title="1 of 2 branches missed.">        for (int i = 0; i &lt; cpuPieces.size(); i++) {</span>
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">            if (cpuPieces.get(i).getX() == x</span>
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">                &amp;&amp; cpuPieces.get(i).getY() == y) {</span>
+<span class="fc" id="L430">                    return true;</span>
+            }
+        }
+<span class="nc" id="L433">        return false;</span>
+    }
+
+    /**
+     * @param opponentPieces
+     * An array list containing the pieces of opponent player.
+     * @param x
+     * The x coordinate that we want to check if the opponent piece has it.
+     * @param y
+     * The y coordinate that we want to check if the opponent piece has it.
+     * @return piece
+     * Return the piece that is being captured from a list of opponent's pieces.
+     */
+    public Piece getCapturedPiece(ArrayList&lt;Piece&gt; opponentPieces, int x, int y) {
+<span class="fc" id="L447">        Piece p = opponentPieces.get(0);</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">        for (int i = 0; i &lt; opponentPieces.size(); i++) {</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">            if (opponentPieces.get(i).getX() == x</span>
+<span class="fc bfc" id="L450" title="All 2 branches covered.">                &amp;&amp; opponentPieces.get(i).getY() == y) {</span>
+<span class="fc" id="L451">                    p = opponentPieces.get(i);</span>
+            }
+        }
+<span class="fc" id="L454">        return p;</span>
+    }
+
+    /**
+     * @param x
+     * The x coordinate of the tile we want to check.
+     * @param y
+     * The y coordinate of the tile we want to check.
+     * @return boolean
+     * Check if the tile with the given coordinate contains a piece of human player.
+     * Returns true if it does.
+     */
+    public boolean containsHumanPiece(int x, int y) {
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">        for (int i = 0; i &lt; humanPieces.size(); i++) {</span>
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">            if (humanPieces.get(i).getX() == x</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">            &amp;&amp; humanPieces.get(i).getY() == y)</span>
+<span class="fc" id="L470">                return true;</span>
+        }
+<span class="nc" id="L472">        return false;</span>
+    }
+
+    /**
+     * @param frameCount
+     * The number of frames when the move happens
+     * @param xMoveTo
+     * The x coordinate of the destination tile.
+     * @param yMoveTo
+     * The y coordinate of the destination tile.
+     * @param selectedPiece
+     * The piece that is being selected and moved.
+     * Calculate the suitable speed to move a piece so the total time taken to 
+     * move the piece never exceeds the maximum time allowed, set the total
+     * number of frames needed to move and get the number of frames when the move
+     * happens.
+     */
+    public void calSpeed(int frameCount, int xMoveTo, int yMoveTo, Piece selectedPiece) {
+<span class="nc" id="L490">        int xDist = selectedPiece.getX() - xMoveTo;</span>
+<span class="nc" id="L491">        int yDist = selectedPiece.getY() - yMoveTo;</span>
+<span class="nc" id="L492">        int tempXDist = xDist;</span>
+<span class="nc" id="L493">        int tempYDist = yDist;</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        if (xDist &lt; 0)</span>
+<span class="nc" id="L495">            tempXDist *= -1;</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        if (yDist &lt; 0)</span>
+<span class="nc" id="L497">            tempYDist *= -1;</span>
+<span class="nc" id="L498">        xSpeed = pieceMovementSpeed;</span>
+<span class="nc" id="L499">        ySpeed = pieceMovementSpeed;</span>
+<span class="nc" id="L500">        double xTotalFrame = tempXDist/xSpeed;</span>
+<span class="nc" id="L501">        double yTotalFrame = tempYDist/ySpeed;</span>
+
+<span class="nc" id="L503">        double xTotalTimeTaken = xTotalFrame/FPS;</span>
+<span class="nc" id="L504">        double yTotalTimeTaken = yTotalFrame/FPS;</span>
+        /*
+        * increment speed until the total time taken is no longer larger
+        * than the max time
+        */
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        if (xTotalTimeTaken &gt; maxMovementTime) {</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">            while (xTotalTimeTaken &gt; maxMovementTime) {</span>
+<span class="nc" id="L511">                xSpeed++;</span>
+<span class="nc" id="L512">                xTotalFrame = tempXDist/xSpeed;</span>
+<span class="nc" id="L513">                xTotalTimeTaken = xTotalFrame/FPS;</span>
+            }
+        }
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        if (yTotalTimeTaken &gt; maxMovementTime) {</span>
+<span class="nc bnc" id="L517" title="All 2 branches missed.">            while (yTotalTimeTaken &gt; maxMovementTime) {</span>
+<span class="nc" id="L518">                ySpeed++;</span>
+<span class="nc" id="L519">                yTotalFrame = tempYDist/ySpeed;</span>
+<span class="nc" id="L520">                yTotalTimeTaken = yTotalFrame/FPS;</span>
+            }
+        }
+        // get the total frames needed
+<span class="nc bnc" id="L524" title="All 2 branches missed.">        if (xTotalFrame &gt;= yTotalFrame)</span>
+<span class="nc" id="L525">            this.totalFrame = xTotalFrame;</span>
+        else
+<span class="nc" id="L527">            this.totalFrame = yTotalFrame;</span>
+        // get the speed
+        // move to the right
+<span class="nc bnc" id="L530" title="All 2 branches missed.">        if (xDist &lt; 0)</span>
+<span class="nc" id="L531">            xSpeed *= -1;</span>
+        // move down
+<span class="nc bnc" id="L533" title="All 2 branches missed.">        if (yDist &lt; 0)</span>
+<span class="nc" id="L534">            ySpeed *= -1;</span>
+        // get the frame count when we start moving
+<span class="nc" id="L536">        this.startFrameCount = frameCount;</span>
+<span class="nc" id="L537">    }</span>
+
+    /**
+     * @param ourPieces
+     * An array list of ally's pieces
+     * @return tile
+     * Return the tile that has a king piece on it.
+     */
+    public Rect getKingTile(ArrayList&lt;Piece&gt; ourPieces) {
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">        for (Rect r : tiles) {</span>
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">            for (Piece p : ourPieces) {</span>
+<span class="fc bfc" id="L548" title="All 2 branches covered.">                if (p.getName().equals(&quot;king&quot;)</span>
+<span class="pc bpc" id="L549" title="2 of 4 branches missed.">                &amp;&amp; r.getX() == p.getX() &amp;&amp; r.getY() == p.getY()) {</span>
+<span class="fc" id="L550">                    return r;</span>
+                }
+<span class="fc" id="L552">            }</span>
+<span class="nc" id="L553">        }</span>
+        /*
+         * this will never be reached unless the king is captured,
+         * which is not happening since we already lose when our king is 
+         * checkmated 
+         */
+<span class="nc" id="L559">        return null;</span>
+    }
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * @param tile
+     * The tile to change color.
+     * Change the color of the tile back to original.
+     */
+    public void changeBackColor(PApplet app, Rect tile) {
+<span class="nc" id="L570">        tile.changeColor(tile.getOriginalColor());</span>
+<span class="nc" id="L571">        tile.drawRect(app);</span>
+<span class="nc" id="L572">    }</span>
+
+    /**
+     * @param x
+     * The x coordinate of the tile we want to get.
+     * @param y
+     * The y coordinate of the tile we want to get.
+     * @return tile
+     * Return the tile with the given coordinate.
+     */
+    public Rect getTile(int x, int y) {
+<span class="fc" id="L583">        Rect rect = tiles.get(0);</span>
+<span class="pc bpc" id="L584" title="1 of 2 branches missed.">        for (Rect r : tiles) {</span>
+<span class="pc bpc" id="L585" title="2 of 4 branches missed.">            if (r.getX() == x &amp;&amp; r.getY() == y) {</span>
+<span class="fc" id="L586">                rect = r;</span>
+<span class="fc" id="L587">                break;</span>
+            }
+<span class="nc" id="L589">        }</span>
+<span class="fc" id="L590">        return rect;</span>
+    }
+
+    /**
+     * @param tileOne
+     * The first tile to be checked if is consecutive to the second tile.
+     * @param tileTwo
+     * The second tile to be checked if is consecutive to the first tile.
+     * @return boolean
+     * Check if tileOne and tileTwo are two consecutive tiles (vertically/horizontally).
+     * Returns true if they are.
+     */
+    public boolean isConsecutiveTile(Rect tileOne, Rect tileTwo) {
+        // check horizontally
+<span class="pc bpc" id="L604" title="1 of 2 branches missed.">        if (tileOne.getY() == tileTwo.getY()) {</span>
+<span class="pc bpc" id="L605" title="2 of 4 branches missed.">            if (tileOne.getX() - tileTwo.getX() == 48 || tileTwo.getX() - tileOne.getX() == 48)</span>
+<span class="fc" id="L606">                return true;</span>
+        }
+        // check vertically
+<span class="nc bnc" id="L609" title="All 2 branches missed.">        if (tileOne.getX() == tileTwo.getX()) {</span>
+<span class="nc bnc" id="L610" title="All 4 branches missed.">            if (tileOne.getY() - tileTwo.getY() == 48 || tileTwo.getY() - tileOne.getY() == 48)</span>
+<span class="nc" id="L611">                return true;</span>
+        }
+<span class="nc" id="L613">        return false;</span>
+    }
+
+    /**
+     * @param x
+     * The x coordinate of the tile we want to check.
+     * @param y
+     * The y coordinate of the tile we want to check.
+     * @param allPossibleMoves
+     * An array list of all the possible moves of a player.
+     * @return boolean
+     * Check if there is a tile with the given coordinate already in the list
+     * that stores all the possible moves of a player. Returns true if there is.
+     */
+    public boolean isDup(int x, int y, ArrayList&lt;Rect&gt; allPossibleMoves) {
+<span class="fc bfc" id="L628" title="All 2 branches covered.">        for (Rect m : allPossibleMoves) {</span>
+<span class="fc bfc" id="L629" title="All 4 branches covered.">            if (m.getX() == x &amp;&amp; m .getY() == y) {</span>
+<span class="fc" id="L630">                return true;</span>
+            }
+<span class="fc" id="L632">        }</span>
+<span class="fc" id="L633">        return false;</span>
+    }
+
+    /**
+     * @param ourPieces
+     * An array list of the pieces of ally.
+     * @param opponentPieces
+     * An array list of the pieces of opponent.
+     * @return array list of tiles
+     * Return an array list containing all the possible moves of a player.
+     */
+    public ArrayList&lt;Rect&gt; getAllPossibleMoves(ArrayList&lt;Piece&gt; ourPieces, ArrayList&lt;Piece&gt; opponentPieces) {
+<span class="fc" id="L645">        ArrayList&lt;Rect&gt; allPossibleMoves = new ArrayList&lt;Rect&gt;();</span>
+        ArrayList&lt;Rect&gt; possibleMoves;
+<span class="fc bfc" id="L647" title="All 2 branches covered.">        for (Piece p : ourPieces) {</span>
+<span class="fc" id="L648">            possibleMoves = p.getPossibleMoves(ourPieces, opponentPieces, tiles);</span>
+<span class="fc bfc" id="L649" title="All 2 branches covered.">            if (p.getName().equals(&quot;pawn&quot;)) {</span>
+<span class="fc bfc" id="L650" title="All 2 branches covered.">                for (Rect tile : tiles) {</span>
+<span class="fc bfc" id="L651" title="All 4 branches covered.">                    if ((tile.getX() == p.getX() - CELLSIZE &amp;&amp; tile.getY() == p.getY() - CELLSIZE)</span>
+<span class="fc bfc" id="L652" title="All 4 branches covered.">                    || (tile.getX() == p.getX() - CELLSIZE &amp;&amp; tile.getY() == p.getY() + CELLSIZE)</span>
+<span class="fc bfc" id="L653" title="All 4 branches covered.">                    || (tile.getX() == p.getX() + CELLSIZE &amp;&amp; tile.getY() == p.getY() - CELLSIZE)</span>
+<span class="fc bfc" id="L654" title="All 4 branches covered.">                    || (tile.getX() == p.getX() + CELLSIZE &amp;&amp; tile.getY() == p.getY() + CELLSIZE))</span>
+<span class="fc" id="L655">                        allPossibleMoves.add(tile);</span>
+<span class="fc" id="L656">                }</span>
+            }
+<span class="fc bfc" id="L658" title="All 2 branches covered.">            for (Rect tile : possibleMoves) {</span>
+                // since getPossibleMoves changes the color of the tiles
+<span class="fc" id="L660">                tile.changeColor(tile.getOriginalColor());</span>
+                /*
+                * if a piece moves to the tile in front of a pawn,
+                * the piece won't be captured since pawn cannot capture
+                * pieces that way
+                * so we need to exclude those possible moves of pawn from
+                * our allPossibleMoves list
+                */
+<span class="fc bfc" id="L668" title="All 2 branches covered.">                if (p.getName().equals(&quot;pawn&quot;)) {</span>
+<span class="pc bpc" id="L669" title="1 of 4 branches missed.">                    if ((tile.getX() == p.getX() &amp;&amp; tile.getY() == p.getY() - CELLSIZE)</span>
+<span class="pc bpc" id="L670" title="3 of 4 branches missed.">                    || (tile.getX() == p.getX() &amp;&amp; tile.getY() == p.getY() - CELLSIZE*2)) {</span>
+<span class="nc" id="L671">                        continue;</span>
+                    }
+<span class="pc bpc" id="L673" title="3 of 4 branches missed.">                    if ((tile.getX() == p.getX() &amp;&amp; tile.getY() == p.getY() + CELLSIZE)</span>
+<span class="pc bpc" id="L674" title="3 of 4 branches missed.">                    || (tile.getX() == p.getX() &amp;&amp; tile.getY() == p.getY() + CELLSIZE*2)) {</span>
+<span class="nc" id="L675">                        continue;</span>
+                    }
+                }
+                // if the tile is not already added in allPossibleMoves
+<span class="fc bfc" id="L679" title="All 2 branches covered.">                if (!isDup(tile.getX(), tile.getY(), allPossibleMoves)) {</span>
+<span class="fc" id="L680">                    allPossibleMoves.add(tile);</span>
+                }
+<span class="fc" id="L682">            }</span>
+<span class="fc" id="L683">        }</span>
+<span class="fc" id="L684">        return allPossibleMoves;</span>
+    }
+
+    /**
+     * @param ourPieces
+     * An array list of the pieces of ally.
+     * @return piece
+     * Return the king from the list of pieces.
+     */
+    public Piece getKingPiece(ArrayList&lt;Piece&gt; ourPieces) {
+<span class="fc" id="L694">        Piece king = ourPieces.get(0);</span>
+<span class="pc bpc" id="L695" title="1 of 2 branches missed.">        for (Piece p : ourPieces) {</span>
+<span class="fc bfc" id="L696" title="All 2 branches covered.">            if (p.getName().equals(&quot;king&quot;)) {</span>
+<span class="fc" id="L697">                king = p;</span>
+<span class="fc" id="L698">                break;</span>
+            }
+<span class="fc" id="L700">        }</span>
+<span class="fc" id="L701">        return king;</span>
+    }
+
+    /**
+     * Restart the game, change all the tiles' colours back to original, set
+     * all the pieces to be back to their original location.
+     */
+    public void restartGame() {
+<span class="fc bfc" id="L709" title="All 2 branches covered.">        for (Rect tile : tiles) {</span>
+<span class="fc" id="L710">            tile.changeColor(tile.getOriginalColor());</span>
+<span class="fc" id="L711">        }</span>
+<span class="fc bfc" id="L712" title="All 2 branches covered.">        for (Piece p : humanPieces) {</span>
+<span class="fc" id="L713">            p.setX(p.getStartXCoor());</span>
+<span class="fc" id="L714">            p.setY(p.getStartYCoor());</span>
+<span class="fc" id="L715">        }</span>
+<span class="fc bfc" id="L716" title="All 2 branches covered.">        for (Piece p : cpuPieces) {</span>
+<span class="fc" id="L717">            p.setX(p.getStartXCoor());</span>
+<span class="fc" id="L718">            p.setY(p.getStartYCoor());</span>
+<span class="fc" id="L719">        }</span>
+<span class="fc" id="L720">    }</span>
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * Display and decrease the timer of both players.
+     */
+    public void timer(PApplet app) {
+        // clear the old time by overlaying the number
+<span class="fc" id="L729">        app.fill(GREY);</span>
+<span class="fc" id="L730">        app.rect(WIDTH - SIDEBAR, 0, SIDEBAR, HEIGHT);</span>
+        // TIME
+<span class="fc" id="L732">        String playerTimer = String.format(&quot;%d:%02d&quot;, playerTime/60, playerTime % 60);</span>
+<span class="fc" id="L733">        String cpuTimer = String.format(&quot;%d:%02d&quot;, cpuTime/60, cpuTime % 60);</span>
+<span class="fc" id="L734">        app.textSize(30);</span>
+<span class="fc" id="L735">        app.fill(DARK_RED);</span>
+        // display time of both human and cpu players
+<span class="fc" id="L737">        app.text(playerTimer, WIDTH - 100, humanTimerHeight);</span>
+<span class="fc" id="L738">        app.text(cpuTimer, WIDTH - 100, cpuTimerHeight);</span>
+        /*
+         * counter to only decrement time by one second not one frame
+         * since FPS = 60
+         */
+<span class="pc bpc" id="L743" title="1 of 2 branches missed.">        if (humanTurn)</span>
+<span class="fc" id="L744">            humanTimeCounter++;</span>
+        else 
+<span class="nc" id="L746">            cpuTimeCounter++;</span>
+<span class="pc bpc" id="L747" title="1 of 2 branches missed.">        if (humanTurn) {</span>
+<span class="pc bpc" id="L748" title="1 of 2 branches missed.">            if (humanTimeCounter == SECOND) {</span>
+<span class="nc" id="L749">                playerTime--;</span>
+<span class="nc" id="L750">                humanTimeCounter = 0;</span>
+            }
+        }
+        else {
+<span class="nc bnc" id="L754" title="All 2 branches missed.">            if (cpuTimeCounter == SECOND) {</span>
+<span class="nc" id="L755">                cpuTime--;</span>
+<span class="nc" id="L756">                cpuTimeCounter = 0;</span>
+            }
+        }
+<span class="fc" id="L759">    }</span>
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * @return boolean
+     * Display the text if the human player wins or if the human player loses
+     * on time. Returns true if the time of either the players run out.
+     */
+    public boolean isOutOfTime(PApplet app) {
+<span class="fc bfc" id="L769" title="All 2 branches covered.">        if (playerTime &lt;= 0) {</span>
+<span class="fc" id="L770">            app.textSize(13);</span>
+<span class="fc" id="L771">            app.fill(DARK_RED);</span>
+<span class="fc" id="L772">            app.text(&quot;You lost on time&quot;, WIDTH - 110, HEIGHT/2);</span>
+<span class="fc" id="L773">            return true;</span>
+        }
+<span class="pc bpc" id="L775" title="1 of 2 branches missed.">        if (cpuTime &lt;= 0) {</span>
+<span class="nc" id="L776">            app.textSize(13);</span>
+<span class="nc" id="L777">            app.fill(DARK_RED);</span>
+<span class="nc" id="L778">            app.text(&quot;You won on time&quot;, WIDTH - 110, HEIGHT/2);</span>
+<span class="nc" id="L779">            return true;</span>
+        }
+<span class="fc" id="L781">        return false;</span>
+    }
+
+    /**
+     * @param app
+     * The app which we display everything of the game.
+     * @param frameCount
+     * The current number of frames.
+     * Restart the game, checks if one of the player runs out of time and displays
+     * the text, displays the timer, draw the chess board and pieces, account for 
+     * the movements of the pieces of both the players.
+     */
+    public void draw(PApplet app, int frameCount) {
+        // if player restart game
+<span class="pc bpc" id="L795" title="1 of 2 branches missed.">        if (restart) {</span>
+<span class="nc" id="L796">            restartGame();</span>
+<span class="nc" id="L797">            restart = false;</span>
+            // change the color of the tiles that mark the previous move back to original color
+<span class="nc" id="L799">            humanPrevTile.changeColor(humanPrevTile.getOriginalColor());</span>
+<span class="nc" id="L800">            cpuPrevTile.changeColor(cpuPrevTile.getOriginalColor());</span>
+<span class="nc" id="L801">            humanTileMoveTo.changeColor(humanTileMoveTo.getOriginalColor());</span>
+<span class="nc" id="L802">            cpuTileMoveTo.changeColor(cpuTileMoveTo.getOriginalColor());</span>
+        }
+<span class="fc bfc" id="L804" title="All 2 branches covered.">        if (isOutOfTime(app)) {</span>
+<span class="fc" id="L805">            return;</span>
+        }
+        // TIMER
+<span class="fc" id="L808">        timer(app);</span>
+        // draw tiles
+<span class="fc bfc" id="L810" title="All 2 branches covered.">        for (int i = 0; i &lt; tiles.size(); i++) {</span>
+<span class="fc" id="L811">            tiles.get(i).drawRect(app);</span>
+        }
+<span class="pc bpc" id="L813" title="1 of 2 branches missed.">        if (humanTurn) {</span>
+            /*
+            if tile is clicked -&gt; change color
+
+            note that isClicked checks if the mouse is clicked while
+            tileIsClicked checks if the tile we are checking is clicked
+            */
+<span class="pc bpc" id="L820" title="1 of 2 branches missed.">            if (isClicked) {</span>
+                // if the tile contains a white piece
+<span class="nc bnc" id="L822" title="All 2 branches missed.">                if (hasHumanPiece(getTileClicked().getX(), getTileClicked().getY())) {</span>
+<span class="nc" id="L823">                    tileSelected = getTileClicked();</span>
+                    // from the tile selected, set the piece selected for human player
+<span class="nc" id="L825">                    setSelectedHumanPiece();</span>
+                    // change the selected tile to green
+<span class="nc" id="L827">                    changeTileColourWhenClicked(app, tileSelected);</span>
+                    // king does not move to dangerous tiles
+<span class="nc" id="L829">                    cpuAllPossibleMoves = getAllPossibleMoves(cpuPieces, humanPieces);</span>
+<span class="nc" id="L830">                    humanKingPiece = getKingPiece(humanPieces);</span>
+<span class="nc" id="L831">                    humanKingPiece.setAllPossibleMoves(cpuAllPossibleMoves);</span>
+                    // get the possible moves
+<span class="nc" id="L833">                    humanPossibleMoves = pieceSelected.getPossibleMoves(humanPieces, cpuPieces, tiles);</span>
+                    // change the possible moves tiles colors
+<span class="nc" id="L835">                    changeToBlue(app);</span>
+<span class="nc" id="L836">                    moveCounter = 0;</span>
+<span class="nc" id="L837">                    cpuMoveCounter = 0;</span>
+<span class="nc" id="L838">                    changeBackCol = false;</span>
+<span class="nc" id="L839">                    humanPrevTile = tileSelected;</span>
+                }
+            }
+<span class="pc bpc" id="L842" title="1 of 2 branches missed.">            else if (!isClicked) {</span>
+                /*
+                    if the selected tile is unselected 
+                    -&gt; change back color and draw the piece back
+                */
+<span class="fc" id="L847">                Rect tileClicked = getTileClicked();</span>
+<span class="fc" id="L848">                humanTileMoveTo = tileClicked;</span>
+<span class="pc bpc" id="L849" title="1 of 2 branches missed.">                if (tileClicked == tileSelected) {</span>
+<span class="nc" id="L850">                    changeBackColourWhenCLicked(app, tileSelected, pieceSelected.getPossibleMoves(humanPieces, cpuPieces, tiles));</span>
+                }
+                /*
+                    if the tile selected is blue
+                    -&gt; change coordinates of the selected white piece
+                    -&gt; change the tiles colors back to original
+                */
+<span class="pc bpc" id="L857" title="1 of 2 branches missed.">                else if (isPossibleMove(tileClicked, humanPossibleMoves)) {</span>
+                    /*
+                    * if move to a castling tile
+                    * -&gt; move king and rook
+                    */
+<span class="nc bnc" id="L862" title="All 4 branches missed.">                    if (pieceSelected.getName().equals(&quot;king&quot;) &amp;&amp; !pieceSelected.hasBeingMoved()) {</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">                        for (Piece p : humanPieces) {</span>
+<span class="nc bnc" id="L864" title="All 4 branches missed.">                            if (p.getName().equals(&quot;rook&quot;) &amp;&amp; p.getX() &lt; pieceSelected.getX() </span>
+<span class="nc bnc" id="L865" title="All 2 branches missed.">                            &amp;&amp; p.getY() == pieceSelected.getY())</span>
+<span class="nc" id="L866">                                leftRook = p;</span>
+<span class="nc bnc" id="L867" title="All 4 branches missed.">                            else if (p.getName().equals(&quot;rook&quot;) &amp;&amp; p.getX() &gt; pieceSelected.getX() </span>
+<span class="nc bnc" id="L868" title="All 2 branches missed.">                            &amp;&amp; p.getY() == pieceSelected.getY())</span>
+<span class="nc" id="L869">                                rightRook = p;</span>
+<span class="nc" id="L870">                        }</span>
+                        /*
+                            if we move to the second tile on the right
+                            -&gt; move the right rook to the left side of the king
+                        */
+<span class="nc bnc" id="L875" title="All 4 branches missed.">                        if (tileClicked.getX() == pieceSelected.getX()+CELLSIZE*2 &amp;&amp; tileClicked.getY() == pieceSelected.getY()) {</span>
+<span class="nc" id="L876">                            calSpeed(frameCount, tileClicked.getX()-CELLSIZE, tileClicked.getY(), pieceSelected);</span>
+<span class="nc" id="L877">                            rightRook.tick(tileClicked.getX()-CELLSIZE, tileClicked.getY(), xSpeed, ySpeed);</span>
+                        }
+                        /*
+                            if we move to the second tile on the left
+                            -&gt; move the left rook to the right of the king
+                        */
+<span class="nc bnc" id="L883" title="All 4 branches missed.">                        else if (tileClicked.getX() == pieceSelected.getX()-CELLSIZE*2 &amp;&amp; tileClicked.getY() == pieceSelected.getY()) {</span>
+<span class="nc" id="L884">                            calSpeed(frameCount, tileClicked.getX()+CELLSIZE, tileClicked.getY(), pieceSelected);</span>
+<span class="nc" id="L885">                            leftRook.tick(tileClicked.getX()+CELLSIZE, tileClicked.getY(), xSpeed, ySpeed);</span>
+                        }
+                    }
+                    // move
+<span class="nc bnc" id="L889" title="All 2 branches missed.">                    if (moveCounter == 0) {</span>
+<span class="nc bnc" id="L890" title="All 4 branches missed.">                        if (cpuPrevTile != null &amp;&amp; cpuTileMoveTo != null) {</span>
+<span class="nc" id="L891">                            cpuPrevTile.changeColor(cpuPrevTile.getOriginalColor());</span>
+<span class="nc" id="L892">                            cpuTileMoveTo.changeColor(cpuTileMoveTo.getOriginalColor());</span>
+                        }
+                        /* calculate the total frame needed
+                        * use counter so this is only done once for a move
+                        */
+<span class="nc" id="L897">                        changeBackColourWhenCLicked(app, tileSelected, humanPossibleMoves);</span>
+<span class="nc" id="L898">                        calSpeed(frameCount, tileClicked.getX(), tileClicked.getY(), pieceSelected);</span>
+<span class="nc" id="L899">                        moveCounter++;</span>
+<span class="nc" id="L900">                        playerTime += playerInc;</span>
+                    }
+<span class="nc bnc" id="L902" title="All 2 branches missed.">                    if (!changeBackCol) {</span>
+                        // mark the previous move by changing the tile color to yellow
+<span class="nc bnc" id="L904" title="All 2 branches missed.">                        if (isConsecutiveTile(humanPrevTile, humanTileMoveTo)) {</span>
+<span class="nc" id="L905">                            humanPrevTile.changeColor(LIGHT_GREEN);</span>
+<span class="nc" id="L906">                            humanTileMoveTo.changeColor(DARK_GREEN);</span>
+                        }
+                        else {
+<span class="nc" id="L909">                            humanPrevTile.changeColor(DARK_GREEN);</span>
+<span class="nc" id="L910">                            humanTileMoveTo.changeColor(DARK_GREEN);   </span>
+                        }
+                    }
+<span class="nc bnc" id="L913" title="All 2 branches missed.">                    if (startFrameCount + totalFrame &gt;= frameCount) {</span>
+<span class="nc" id="L914">                        pieceSelected.tick(tileClicked.getX(), tileClicked.getY(), xSpeed, ySpeed);</span>
+                    }
+                    // finish moving
+                    else {
+                        // switch to cpu's turn
+<span class="nc" id="L919">                        humanTurn = false;</span>
+                        /* 
+                        * check if the piece is a pawn at rank 8th from bottom
+                        * -&gt; change to queen
+                        *
+                        * change to queen after arriving at the destination
+                        */
+<span class="nc bnc" id="L926" title="All 2 branches missed.">                        if (pieceSelected.getName().equals(&quot;pawn&quot;) </span>
+<span class="nc bnc" id="L927" title="All 2 branches missed.">                        &amp;&amp; tileClicked.getY() &lt;= CELLSIZE*(BOARD_WIDTH-8))</span>
+<span class="nc" id="L928">                            changeToQueen(true, tileClicked.getX(), tileClicked.getY());</span>
+                    }
+                    /*
+                        * if the piece's coordinate is not the same as the 
+                        * original one, then it has being moved
+                        * 
+                        * we only set 'moved' to true but don't set it to false
+                        * to ensure that this only happens once
+                        * 
+                        * so if the piece moves from another place back 
+                        * to its place, it's still considered as 'moved'
+                    */
+<span class="nc bnc" id="L940" title="All 2 branches missed.">                    if (pieceSelected.getX() != pieceSelected.getStartXCoor()</span>
+<span class="nc bnc" id="L941" title="All 2 branches missed.">                    || pieceSelected.getY() != pieceSelected.getStartYCoor())</span>
+<span class="nc" id="L942">                        pieceSelected.setMoved(true);</span>
+                    /*
+                    * if captures an opponent's piece
+                    * -&gt; remove the opponent's piece from cpuPieces
+                    */
+<span class="nc bnc" id="L947" title="All 2 branches missed.">                    if (hasCPUPiece(tileClicked.getX(), tileClicked.getY())) {</span>
+<span class="nc" id="L948">                        removePiece(cpuPieces, getCapturedPiece(cpuPieces, tileClicked.getX(), tileClicked.getY()));</span>
+                    }
+                }
+                // other deselected tiles or click elsewhere
+                else {
+                    /* 
+                     * change the tiles colors back to original when 
+                     * unselect by clicking elsewhere not the selected piece
+                     * 
+                     * tileSelected != null since there must be a tile selected
+                     * to change color back
+                     */
+<span class="pc bpc" id="L960" title="1 of 2 branches missed.">                    if (tileSelected != null)</span>
+<span class="nc" id="L961">                        changeBackColourWhenCLicked(app, tileSelected, pieceSelected.getPossibleMoves(humanPieces, cpuPieces, tiles));</span>
+                }
+            }
+        }
+        // CPU's turn
+<span class="pc bpc" id="L966" title="1 of 2 branches missed.">        if (!humanTurn) {</span>
+<span class="nc" id="L967">            Random random = new Random();</span>
+            if (true) {
+                // animation of cpu pieces
+                /*
+                * choose a random piece from cpuPieces to move
+                * -&gt; piece should have a possible and valid move 
+                */
+<span class="nc bnc" id="L974" title="All 2 branches missed.">                if (this.cpuMoveCounter == 0) {</span>
+<span class="nc" id="L975">                    changeBackCol = true;</span>
+                    // change the color of the tiles that mark the previous moves back
+<span class="nc bnc" id="L977" title="All 6 branches missed.">                    if (humanPrevTile != null &amp;&amp; humanTileMoveTo != null &amp;&amp; changeBackCol) {</span>
+<span class="nc" id="L978">                        humanPrevTile.changeColor(humanPrevTile.getOriginalColor());</span>
+<span class="nc" id="L979">                        humanTileMoveTo.changeColor(humanTileMoveTo.getOriginalColor()); </span>
+                    }
+                    // select a random piece
+                    while (true) {
+<span class="nc" id="L983">                        int randomPiece = random.nextInt(0, cpuPieces.size());</span>
+<span class="nc bnc" id="L984" title="All 2 branches missed.">                        if (!cpuPieces.get(randomPiece).getPossibleMoves(cpuPieces, humanPieces, tiles).isEmpty()) {</span>
+<span class="nc" id="L985">                            cpuSelectedPiece = cpuPieces.get(randomPiece);</span>
+<span class="nc" id="L986">                            cpuPrevTile = getTile(cpuSelectedPiece.getX(), cpuSelectedPiece.getY());</span>
+<span class="nc" id="L987">                            break;</span>
+                        }
+<span class="nc" id="L989">                    }</span>
+                    // king does not move to dangerous tiles
+<span class="nc" id="L991">                    humanAllPossibleMoves = getAllPossibleMoves(humanPieces, cpuPieces);</span>
+<span class="nc" id="L992">                    cpuKingPiece = getKingPiece(cpuPieces);</span>
+<span class="nc" id="L993">                    cpuKingPiece.setAllPossibleMoves(humanAllPossibleMoves);</span>
+
+
+                    // list of possible moves of the selected piece
+<span class="nc" id="L997">                    cpuPossibleMoves = cpuSelectedPiece.getPossibleMoves(cpuPieces, humanPieces, tiles);</span>
+                    // select a random move
+<span class="nc" id="L999">                    randomMove = random.nextInt(0, cpuPossibleMoves.size());</span>
+<span class="nc" id="L1000">                    cpuSelectedTile = cpuPossibleMoves.get(randomMove);</span>
+<span class="nc" id="L1001">                    cpuTileMoveTo = cpuSelectedTile;</span>
+<span class="nc" id="L1002">                    calSpeed(frameCount, cpuSelectedTile.getX(), cpuSelectedTile.getY(), cpuSelectedPiece);</span>
+<span class="nc" id="L1003">                    cpuMoveCounter++;</span>
+<span class="nc" id="L1004">                    cpuTime += cpuInc;</span>
+                }
+                // mark the previous move by changing the tile color to yellow
+<span class="nc bnc" id="L1007" title="All 2 branches missed.">                if (isConsecutiveTile(cpuPrevTile, cpuTileMoveTo)) {</span>
+<span class="nc" id="L1008">                    cpuPrevTile.changeColor(LIGHT_GREEN);</span>
+<span class="nc" id="L1009">                    cpuTileMoveTo.changeColor(DARK_GREEN);</span>
+                }
+                else {
+<span class="nc" id="L1012">                    cpuPrevTile.changeColor(DARK_GREEN);</span>
+<span class="nc" id="L1013">                    cpuTileMoveTo.changeColor(DARK_GREEN);   </span>
+                }
+                // start moving
+<span class="nc bnc" id="L1016" title="All 2 branches missed.">                if ((startFrameCount + totalFrame &gt;= frameCount)) {</span>
+<span class="nc" id="L1017">                    cpuSelectedPiece.tick(cpuSelectedTile.getX(), cpuSelectedTile.getY(), xSpeed, ySpeed);</span>
+                } 
+                else {
+                    // switch to human's turn
+<span class="nc" id="L1021">                    humanTurn = true;</span>
+                }
+            }
+            // if the destination has a piece of human player, then capture it
+<span class="nc bnc" id="L1025" title="All 2 branches missed.">            if (hasHumanPiece(cpuSelectedTile.getX(), cpuSelectedTile.getY())) {</span>
+<span class="nc" id="L1026">                removePiece(humanPieces, getCapturedPiece(humanPieces, cpuSelectedTile.getX(), cpuSelectedTile.getY()));</span>
+            }
+        }
+<span class="fc bfc" id="L1029" title="All 2 branches covered.">        for (int j = 0; j &lt; cpuPieces.size(); j++) {</span>
+<span class="fc" id="L1030">            cpuPieces.get(j).draw(app);</span>
+        }
+<span class="fc bfc" id="L1032" title="All 2 branches covered.">        for (int k = 0; k &lt; humanPieces.size(); k++) {</span>
+<span class="fc" id="L1033">            humanPieces.get(k).draw(app);</span>
+        }
+<span class="fc" id="L1035">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
