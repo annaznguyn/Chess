@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="XXLChess.SampleTest" tests="44" skipped="0" failures="0" errors="0" timestamp="2024-11-30T12:15:48" hostname="DESKTOP-LE7Q0ED" time="0.705">
+  <properties/>
+  <testcase name="pawnTickTest()" classname="XXLChess.SampleTest" time="0.016"/>
+  <testcase name="removePieceTest()" classname="XXLChess.SampleTest" time="0.008"/>
+  <testcase name="calSpeedTest()" classname="XXLChess.SampleTest" time="0.004"/>
+  <testcase name="amazonGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.005"/>
+  <testcase name="kingGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.003"/>
+  <testcase name="isPossibleMoveTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="drawRectTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="archbishopTickTest()" classname="XXLChess.SampleTest" time="0.003"/>
+  <testcase name="getAllPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.002"/>
+  <testcase name="getTileClickedTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="getCapturedPieceTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="restartGameTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="containsHumanPieceTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="chancellorTickTest()" classname="XXLChess.SampleTest" time="0.003"/>
+  <testcase name="pawnGetPossibleMovesTestFour()" classname="XXLChess.SampleTest" time="0.004"/>
+  <testcase name="knightTickTest()" classname="XXLChess.SampleTest" time="0.002"/>
+  <testcase name="pawpawTickTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="camelTickTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="pawnGetPossibleMovesTestOne()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="pawnGetPossibleMovesTestTwo()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="rookGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="getTileTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="CamelGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="guardTickTest()" classname="XXLChess.SampleTest" time="0.003"/>
+  <testcase name="bishopGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.003"/>
+  <testcase name="queenTickTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="pawnGetPossibleMovesTestThree()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="amazonTickTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="settingsTest()" classname="XXLChess.SampleTest" time="0.611"/>
+  <testcase name="knightGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="archbishopGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="isConsecutiveTileTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="queenGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="guardGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="hasHumanPieceTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="pawpawGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="chancellorGetPossibleMovesTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="isDupTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="rookTickTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="getKingPieceTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="kingTickTest()" classname="XXLChess.SampleTest" time="0.0"/>
+  <testcase name="tileIsClickedTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="hasCPUPieceTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <testcase name="bishopTickTest()" classname="XXLChess.SampleTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
